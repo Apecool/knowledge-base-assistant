@@ -1,0 +1,33 @@
+# Node
+node_modules/
+
+# Python
+__pycache__/
+*.py[cod]
+venv/
+.env
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Database
+*.db
+*.sqlite3
+
+# Build artifacts
+dist/
+build/
+*.egg-info/
+
+# ChromaDB
+chroma_db/
+
+# Cline
+.clinerules
