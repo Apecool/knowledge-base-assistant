@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { knowledgeAPI } from '../api/knowledge'
-import type { KnowledgeItemResponse, KnowledgeItemList } from '../types/api'
+import type { KnowledgeItemResponse, KnowledgeItemCreate } from '../types/api'
 
 export const useKnowledgeStore = defineStore('knowledge', () => {
   const items = ref<KnowledgeItemResponse[]>([])
@@ -45,7 +45,7 @@ export const useKnowledgeStore = defineStore('knowledge', () => {
     return result
   }
 
-  async function updateItem(id: number, data: Partial<KnowledgeItemResponse>) {
+  async function updateItem(id: number, data: Partial<KnowledgeItemCreate>) {
     const result = await knowledgeAPI.update(id, data)
     if (currentItem.value?.id === id) {
       currentItem.value = result
