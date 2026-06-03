@@ -51,10 +51,10 @@ async def semantic_search(
     try:
         rag = LangChainRAGService(
             persist_dir=settings.CHROMA_PERSIST_DIR,
-            enable_reranker=True,
+            enable_reranker=False,
             enable_cache=True,
         )
-        results = rag.search(query=q, top_k=top_k, rerank=True)
+        results = rag.search(query=q, top_k=top_k, rerank=False)
 
         chunk_results = [
             ChunkResult(
@@ -87,7 +87,7 @@ async def reindex_all(db: Session = Depends(get_db)):
     try:
         rag = LangChainRAGService(
             persist_dir=settings.CHROMA_PERSIST_DIR,
-            enable_reranker=True,
+            enable_reranker=False,
             enable_cache=True,
         )
         result = rag.reindex_all(db)
@@ -113,7 +113,7 @@ async def reindex_single(item_id: int, db: Session = Depends(get_db)):
     try:
         rag = LangChainRAGService(
             persist_dir=settings.CHROMA_PERSIST_DIR,
-            enable_reranker=True,
+            enable_reranker=False,
             enable_cache=True,
         )
         chunks = rag.index_knowledge(
