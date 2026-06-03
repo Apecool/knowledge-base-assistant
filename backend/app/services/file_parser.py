@@ -2,9 +2,8 @@
 File Parser Service — Parses uploaded documents (.txt, .md, .pdf, .docx)
 Extracts title and content text for knowledge base indexing.
 """
-import os
 import re
-from typing import Dict, Optional, Tuple
+from typing import Dict, Tuple
 from pathlib import Path
 
 

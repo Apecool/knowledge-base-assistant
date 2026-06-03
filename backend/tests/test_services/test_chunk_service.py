@@ -1,7 +1,6 @@
 """
 Tests for the Document Chunking Service.
 """
-import pytest
 from app.services.chunk_service import chunk_document, chunk_metadata
 
 

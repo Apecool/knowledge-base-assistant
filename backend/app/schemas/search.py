@@ -1,7 +1,7 @@
 """
 Search-related Pydantic schemas for RAG and semantic search.
 """
-from typing import List, Optional, Any, Dict
+from typing import List, Any, Dict
 from pydantic import BaseModel, Field
 
 

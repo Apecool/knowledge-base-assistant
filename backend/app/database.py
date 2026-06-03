@@ -5,7 +5,6 @@ Supports SQLite (dev) and PostgreSQL (production/Render/Supabase).
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
-from contextlib import asynccontextmanager
 
 from app.config import settings
 

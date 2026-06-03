@@ -4,7 +4,7 @@ Knowledge Service - Business Logic Layer
 from typing import Optional, List
 from sqlalchemy.orm import Session
 
-from app.models.knowledge import KnowledgeItem, KnowledgeStatus
+from app.models.knowledge import KnowledgeItem
 from app.schemas.knowledge import KnowledgeItemCreate, KnowledgeItemUpdate
 
 

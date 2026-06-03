@@ -2,10 +2,9 @@
 Chat API — Multi-turn conversation with RAG context, streaming SSE support.
 """
 import json
-import time
 import asyncio
-from typing import AsyncGenerator, Optional
-from fastapi import APIRouter, Depends, HTTPException, Request
+from typing import AsyncGenerator
+from fastapi import APIRouter, Depends, Request
 from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 
@@ -14,7 +13,6 @@ from app.schemas.chat import (
     ChatRequest,
     ChatResponse,
     ChatSessionDetail,
-    ChatSessionSchema,
     CacheStats,
 )
 from app.services.langchain_rag import LangChainRAGService

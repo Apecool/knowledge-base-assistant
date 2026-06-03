@@ -1,7 +1,7 @@
 """
 Chat API Pydantic schemas for multi-turn conversation and streaming.
 """
-from typing import List, Optional, Dict, Any
+from typing import List, Dict, Any
 from pydantic import BaseModel, Field
 
 

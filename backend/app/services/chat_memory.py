@@ -4,7 +4,6 @@ Manages per-session chat history with context summarization.
 """
 import time
 from typing import List, Dict, Optional
-from collections import defaultdict
 
 
 class ChatMessage:

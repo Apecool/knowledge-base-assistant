@@ -2,7 +2,6 @@
 Structured logging with trace ID support for request tracing.
 """
 import logging
-import time
 from contextvars import ContextVar
 from typing import Optional
 

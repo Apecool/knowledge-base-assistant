@@ -1,8 +1,6 @@
 """
 Tests for Search API endpoints — full-text and semantic search.
 """
-import io
-import pytest
 
 
 class TestFullTextSearch:
@@ -75,7 +73,7 @@ class TestSemanticSearch:
         # First create a knowledge item (this indexes it into vector store)
         resp = client.post("/api/v1/knowledge/", json=sample_knowledge_data)
         assert resp.status_code == 201
-        item_id = resp.json()["id"]
+        resp.json()["id"]
 
         # Now search semantically
         response = client.get("/api/v1/search/semantic?q=什么是微服务&top_k=5")

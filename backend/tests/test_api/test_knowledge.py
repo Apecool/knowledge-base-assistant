@@ -1,7 +1,6 @@
 """
 Tests for Knowledge CRUD API endpoints.
 """
-import pytest
 
 
 class TestCreateKnowledge:

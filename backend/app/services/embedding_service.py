@@ -3,7 +3,7 @@ Local Embedding Service using TF-IDF with character n-grams.
 No model downloads needed, works completely offline.
 Dimension: 128 (balanced for Chinese character n-grams).
 """
-from typing import List, Optional
+from typing import List
 import numpy as np
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.decomposition import TruncatedSVD

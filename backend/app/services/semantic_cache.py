@@ -3,7 +3,6 @@ Semantic Cache — Cache LLM responses based on query embedding similarity.
 Reuses cached responses for semantically similar queries (threshold > 0.95).
 """
 import time
-import hashlib
 from typing import List, Optional, Dict, Any
 from app.services.embedding_service import LocalEmbeddingService
 

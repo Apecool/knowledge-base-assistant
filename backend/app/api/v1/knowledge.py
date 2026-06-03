@@ -8,7 +8,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, File, UploadFile, 
 from sqlalchemy.orm import Session
 
 from app.database import get_db
-from app.models.knowledge import KnowledgeItem, KnowledgeStatus
+from app.models.knowledge import KnowledgeItem
 from app.schemas.knowledge import (
     KnowledgeItemCreate,
     KnowledgeItemUpdate,

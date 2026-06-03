@@ -9,7 +9,6 @@ from app.database import get_db
 from app.models.knowledge import KnowledgeItem
 from app.schemas.knowledge import KnowledgeItemResponse
 from app.schemas.search import (
-    SemanticSearchQuery,
     SemanticSearchResponse,
     ChunkResult,
     ReindexResponse,

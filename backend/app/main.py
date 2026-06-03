@@ -3,7 +3,6 @@ FastAPI Application Entry Point
 """
 import time
 import uuid
-import logging
 from fastapi import FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -11,7 +10,7 @@ from app.config import settings
 from app.api.v1 import knowledge, search, auth, chat
 from app.utils.logger import TraceLogger, trace_id_var
 from app.utils.sentry import init_sentry
-from app.database import engine, Base, init_db
+from app.database import init_db
 
 app = FastAPI(
     title="知识库助手 API",

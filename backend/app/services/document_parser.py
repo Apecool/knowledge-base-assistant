@@ -3,7 +3,7 @@ Document Parser — Markdown-aware document parser that preserves
 table structure, heading hierarchy, and code blocks during chunking.
 """
 import re
-from typing import List, Dict, Optional, Tuple
+from typing import List, Dict
 
 
 class DocumentParser:

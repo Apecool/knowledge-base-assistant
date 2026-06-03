@@ -3,7 +3,7 @@ LangChain-based RAG Service
 Integrated pipeline: document parsing → chunking → embedding → retrieval → reranking
 Uses LangChain components with local sentence-transformers and ChromaDB.
 """
-from typing import List, Dict, Any, Optional, AsyncGenerator
+from typing import List, Dict, Any, Optional
 from sqlalchemy.orm import Session
 
 from app.config import settings
