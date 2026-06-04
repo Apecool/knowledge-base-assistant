@@ -4,7 +4,8 @@ Reads from backend/.env automatically via pydantic-settings.
 Only template with defaults — real values go in .env (gitignored).
 """
 from pydantic_settings import BaseSettings
-from typing import List
+from typing import List, Union
+from pydantic import field_validator
 
 
 class Settings(BaseSettings):
@@ -23,8 +24,20 @@ class Settings(BaseSettings):
         "http://localhost:5173",
         "http://localhost:3000",
         "https://kb-assistant.vercel.app",
+        "https://knowledge-base-assistant-sandy.vercel.app"
     ]
 
+    @field_validator("CORS_ORIGINS", mode="before")
+    @classmethod
+    def parse_cors_origins(cls, v: Union[str, List[str]]) -> List[str]:
+        # If it comes in from the environment as a plain string, split it by commas
+        if isinstance(v, str):
+            # Handle JSON array format just in case
+            if v.startswith("[") and v.endswith("]"):
+                import json
+                return json.loads(v)
+            return [item.strip() for item in v.split(",") if item.strip()]
+        return v
     # JWT Authentication
     SECRET_KEY: str = "your-secret-key-change-in-production"
     ALGORITHM: str = "HS256"
