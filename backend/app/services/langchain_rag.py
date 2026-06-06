@@ -12,7 +12,7 @@ from app.services.semantic_cache import SemanticCache
 from app.services.document_parser import chunk_with_structure
 from app.utils.logger import TraceLogger
 
-# Use only our local TF-IDF embedding — zero downloads
+# Use only our local TF-IDF embedding — zero downloads, zero network
 from app.services.embedding_service import LocalEmbeddingService
 from app.services.vector_store import VectorStore
 

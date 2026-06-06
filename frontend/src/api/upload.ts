@@ -1,4 +1,5 @@
 import apiClient from './index'
+import type { KnowledgeItemResponse } from '../types/api'
 
 export interface FileParseResult {
   title: string
@@ -18,12 +19,13 @@ export const uploadAPI = {
 
     return apiClient.post('/api/v1/knowledge/parse-file', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
-      timeout: 300000,
+      timeout: 60000, // 60s for parsing
     })
   },
 
   /**
    * Upload a file and create a knowledge item directly.
+   * Indexing runs in background — response returns quickly.
    */
   async uploadFile(
     file: File,
@@ -38,7 +40,7 @@ export const uploadAPI = {
 
     return apiClient.post('/api/v1/knowledge/upload', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
-      timeout: 300000,
+      timeout: 60000, // 60s — indexing runs in background, response is fast
     })
   },
 }

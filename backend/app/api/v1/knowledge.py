@@ -82,22 +82,26 @@ async def create_knowledge(
     item: KnowledgeItemCreate,
     db: Session = Depends(get_db),
 ):
-    """Create a new knowledge item and index it in the vector store."""
+    """Create a new knowledge item. Indexing runs in background."""
     db_item = KnowledgeItem(**item.model_dump())
     db.add(db_item)
     db.commit()
     db.refresh(db_item)
 
-    try:
-        rag = get_rag()
-        rag.index_knowledge(
-            knowledge_id=db_item.id,
-            title=db_item.title,
-            content=db_item.content,
-            category=db_item.category,
-        )
-    except Exception:
-        pass
+    # Background indexing — don't block the response
+    import threading
+    def _bg_index(item_id: int):
+        try:
+            rag = get_rag()
+            rag.index_knowledge(
+                knowledge_id=item_id,
+                title=db_item.title,
+                content=db_item.content,
+                category=db_item.category,
+            )
+        except Exception:
+            pass
+    threading.Thread(target=_bg_index, args=(db_item.id,), daemon=True).start()
 
     return db_item
 
@@ -202,16 +206,9 @@ async def upload_knowledge(
     db.commit()
     db.refresh(db_item)
 
-    try:
-        rag = get_rag()
-        rag.index_knowledge(
-            knowledge_id=db_item.id,
-            title=db_item.title,
-            content=db_item.content,
-            category=db_item.category,
-        )
-    except Exception:
-        pass
+    import threading as _t
+    _id, _t, _c, _cat = db_item.id, db_item.title, db_item.content, db_item.category
+    _t.Thread(target=lambda: get_rag().index_knowledge(_id, _t, _c, _cat), daemon=True).start()
 
     return db_item
 
