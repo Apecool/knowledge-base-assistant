@@ -206,9 +206,15 @@ async def upload_knowledge(
     db.commit()
     db.refresh(db_item)
 
-    import threading as _t
-    _id, _t, _c, _cat = db_item.id, db_item.title, db_item.content, db_item.category
-    _t.Thread(target=lambda: get_rag().index_knowledge(_id, _t, _c, _cat), daemon=True).start()
+    _id, _title, _content, _category = db_item.id, db_item.title, db_item.content, db_item.category
+    def _bg_index():
+        try:
+            rag = get_rag()
+            rag.index_knowledge(_id, _title, _content, _category)
+        except Exception:
+            pass
+    import threading
+    threading.Thread(target=_bg_index, daemon=True).start()
 
     return db_item
 
