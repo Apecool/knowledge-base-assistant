@@ -21,6 +21,7 @@ export interface KnowledgeItemResponse {
   category: string | null
   tags: string | null
   status: string
+  visibility: string
   source: string | null
   created_by: number | null
   created_at: string
@@ -40,6 +41,7 @@ export interface KnowledgeItemCreate {
   category?: string
   tags?: string
   source?: string
+  visibility?: string
 }
 
 export interface UserLogin {

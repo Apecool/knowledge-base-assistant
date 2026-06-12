@@ -1,14 +1,15 @@
 """
-Knowledge CRUD API Routes
-Auto-indexes into vector store on create/update/delete.
-Supports file upload (.txt, .md, .pdf, .docx).
+Knowledge CRUD API Routes — with private/shared visibility.
+Users see their own items + all shared items. Only the creator can delete.
 """
 from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, Query, File, UploadFile, Form
 from sqlalchemy.orm import Session
+from sqlalchemy import or_
 
 from app.database import get_db
-from app.models.knowledge import KnowledgeItem
+from app.models.knowledge import KnowledgeItem, Visibility
+from app.models.user import User
 from app.schemas.knowledge import (
     KnowledgeItemCreate,
     KnowledgeItemUpdate,
@@ -19,6 +20,7 @@ from app.schemas.knowledge import (
 from app.services.langchain_rag import LangChainRAGService
 from app.services.file_parser import FileParser
 from app.config import settings
+from app.api.v1.auth import get_current_user
 
 router = APIRouter()
 
@@ -32,6 +34,14 @@ def get_rag() -> LangChainRAGService:
     )
 
 
+def _visibility_filter(user_id: int):
+    """Return SQLAlchemy filter for items visible to a user."""
+    return or_(
+        KnowledgeItem.created_by == user_id,
+        KnowledgeItem.visibility == Visibility.SHARED,
+    )
+
+
 @router.get("/", response_model=KnowledgeItemList)
 async def list_knowledge(
     page: int = Query(1, ge=1),
@@ -39,10 +49,13 @@ async def list_knowledge(
     category: Optional[str] = None,
     status: Optional[str] = None,
     search: Optional[str] = None,
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    """Get a paginated list of knowledge items."""
-    query = db.query(KnowledgeItem)
+    """Get a paginated list of knowledge items visible to the current user."""
+    query = db.query(KnowledgeItem).filter(
+        _visibility_filter(current_user.id)
+    )
 
     if category:
         query = query.filter(KnowledgeItem.category == category)
@@ -69,9 +82,16 @@ async def list_knowledge(
 
 
 @router.get("/{item_id}", response_model=KnowledgeItemResponse)
-async def get_knowledge(item_id: int, db: Session = Depends(get_db)):
-    """Get a single knowledge item by ID."""
-    item = db.query(KnowledgeItem).filter(KnowledgeItem.id == item_id).first()
+async def get_knowledge(
+    item_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Get a single knowledge item by ID (must be visible to user)."""
+    item = db.query(KnowledgeItem).filter(
+        KnowledgeItem.id == item_id,
+        _visibility_filter(current_user.id),
+    ).first()
     if not item:
         raise HTTPException(status_code=404, detail="Knowledge item not found")
     return item
@@ -80,10 +100,14 @@ async def get_knowledge(item_id: int, db: Session = Depends(get_db)):
 @router.post("/", response_model=KnowledgeItemResponse, status_code=201)
 async def create_knowledge(
     item: KnowledgeItemCreate,
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
     """Create a new knowledge item. Indexing runs in background."""
-    db_item = KnowledgeItem(**item.model_dump())
+    db_item = KnowledgeItem(
+        **item.model_dump(),
+        created_by=current_user.id,
+    )
     db.add(db_item)
     db.commit()
     db.refresh(db_item)
@@ -110,14 +134,24 @@ async def create_knowledge(
 async def update_knowledge(
     item_id: int,
     item: KnowledgeItemUpdate,
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    """Update an existing knowledge item and re-index it."""
-    db_item = db.query(KnowledgeItem).filter(KnowledgeItem.id == item_id).first()
+    """Update an existing knowledge item (creator or shared) and re-index it."""
+    db_item = db.query(KnowledgeItem).filter(
+        KnowledgeItem.id == item_id,
+        _visibility_filter(current_user.id),
+    ).first()
     if not db_item:
         raise HTTPException(status_code=404, detail="Knowledge item not found")
 
+    # Only the creator can change visibility or delete
     update_data = item.model_dump(exclude_unset=True)
+
+    # Only creator can change visibility
+    if "visibility" in update_data and db_item.created_by != current_user.id:
+        raise HTTPException(status_code=403, detail="Only the creator can change visibility")
+
     for key, value in update_data.items():
         setattr(db_item, key, value)
 
@@ -175,6 +209,7 @@ async def upload_knowledge(
     category: Optional[str] = Form(None),
     tags: Optional[str] = Form(None),
     source: Optional[str] = Form(None),
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
     """
@@ -201,6 +236,7 @@ async def upload_knowledge(
         category=category,
         tags=tags,
         source=source or file.filename,
+        created_by=current_user.id,
     )
     db.add(db_item)
     db.commit()
@@ -220,11 +256,18 @@ async def upload_knowledge(
 
 
 @router.delete("/{item_id}", status_code=204)
-async def delete_knowledge(item_id: int, db: Session = Depends(get_db)):
-    """Delete a knowledge item and remove it from vector store."""
-    db_item = db.query(KnowledgeItem).filter(KnowledgeItem.id == item_id).first()
+async def delete_knowledge(
+    item_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Delete a knowledge item — only the creator can delete it."""
+    db_item = db.query(KnowledgeItem).filter(
+        KnowledgeItem.id == item_id,
+        KnowledgeItem.created_by == current_user.id,
+    ).first()
     if not db_item:
-        raise HTTPException(status_code=404, detail="Knowledge item not found")
+        raise HTTPException(status_code=404, detail="Knowledge item not found or not owned by you")
 
     try:
         rag = get_rag()

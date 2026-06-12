@@ -57,6 +57,37 @@
           <label class="block text-sm font-medium text-gray-700 mb-1">来源</label>
           <input v-model="form.source" type="text" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent" placeholder="来源链接或备注" />
         </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">可见性</label>
+          <div class="flex gap-3">
+            <button
+              type="button"
+              @click="form.visibility = 'private'"
+              :class="[
+                'flex items-center gap-2 px-4 py-2 rounded-lg border text-sm transition',
+                form.visibility === 'private'
+                  ? 'border-gray-800 bg-gray-800 text-white'
+                  : 'border-gray-300 bg-white text-gray-600 hover:border-gray-400'
+              ]"
+            >
+              🔒 私人
+              <span class="text-xs opacity-70">仅自己可见</span>
+            </button>
+            <button
+              type="button"
+              @click="form.visibility = 'shared'"
+              :class="[
+                'flex items-center gap-2 px-4 py-2 rounded-lg border text-sm transition',
+                form.visibility === 'shared'
+                  ? 'border-blue-500 bg-blue-500 text-white'
+                  : 'border-gray-300 bg-white text-gray-600 hover:border-blue-300'
+              ]"
+            >
+              🌐 团队共享
+              <span class="text-xs opacity-70">所有人可编辑</span>
+            </button>
+          </div>
+        </div>
         <div class="flex gap-3 justify-end pt-4 border-t border-gray-200">
           <button @click="$emit('cancel')" class="px-5 py-2 text-sm text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition">取消</button>
           <button @click="handleSave" :disabled="!isValid" class="px-5 py-2 text-sm text-white bg-blue-500 rounded-lg hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition">保存</button>
@@ -77,7 +108,7 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits<{
-  save: [data: { title: string; content: string; category?: string; tags?: string; source?: string }]
+  save: [data: { title: string; content: string; category?: string; tags?: string; source?: string; visibility?: string }]
   cancel: []
 }>()
 
@@ -87,6 +118,7 @@ const form = reactive({
   category: props.initialData?.category || '',
   tags: props.initialData?.tags || '',
   source: props.initialData?.source || '',
+  visibility: props.initialData?.visibility || 'private',
 })
 
 const dragging = ref(false)
@@ -149,6 +181,7 @@ function handleSave() {
     category: form.category.trim() || undefined,
     tags: form.tags.trim() || undefined,
     source: form.source.trim() || undefined,
+    visibility: form.visibility,
   })
 }
 </script>

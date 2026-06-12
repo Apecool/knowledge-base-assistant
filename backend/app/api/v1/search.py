@@ -1,12 +1,14 @@
 """
-Search API Routes — Full-text and semantic (RAG) search
+Search API Routes — Full-text and semantic (RAG) search with visibility filtering.
 """
 from typing import Optional, List
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
+from sqlalchemy import or_
 
 from app.database import get_db
-from app.models.knowledge import KnowledgeItem
+from app.models.knowledge import KnowledgeItem, Visibility
+from app.models.user import User
 from app.schemas.knowledge import KnowledgeItemResponse
 from app.schemas.search import (
     SemanticSearchResponse,
@@ -15,8 +17,17 @@ from app.schemas.search import (
 )
 from app.services.langchain_rag import LangChainRAGService
 from app.config import settings
+from app.api.v1.auth import get_current_user
 
 router = APIRouter()
+
+
+def _visibility_filter(user_id: int):
+    """Return SQLAlchemy filter for items visible to a user."""
+    return or_(
+        KnowledgeItem.created_by == user_id,
+        KnowledgeItem.visibility == Visibility.SHARED,
+    )
 
 
 @router.get("/", response_model=List[KnowledgeItemResponse])
@@ -24,12 +35,14 @@ async def search_knowledge(
     q: str = Query(..., min_length=1, description="Search query"),
     category: Optional[str] = None,
     limit: int = Query(10, ge=1, le=50),
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    """Full-text search across knowledge items (SQL LIKE)."""
+    """Full-text search across knowledge items visible to the current user (SQL LIKE)."""
     query = db.query(KnowledgeItem).filter(
+        _visibility_filter(current_user.id),
         KnowledgeItem.title.contains(q)
-        | KnowledgeItem.content.contains(q)
+        | KnowledgeItem.content.contains(q),
     )
 
     if category:

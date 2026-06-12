@@ -1,5 +1,5 @@
 """
-Knowledge Item Pydantic Schemas
+Knowledge Item Pydantic Schemas — with multi-tenant visibility support.
 """
 from datetime import datetime
 from typing import Optional, List
@@ -12,6 +12,7 @@ class KnowledgeItemCreate(BaseModel):
     category: Optional[str] = None
     tags: Optional[str] = None
     source: Optional[str] = None
+    visibility: str = Field("private", pattern=r"^(private|shared)$")
 
 
 class KnowledgeItemUpdate(BaseModel):
@@ -21,6 +22,7 @@ class KnowledgeItemUpdate(BaseModel):
     tags: Optional[str] = None
     status: Optional[str] = None
     source: Optional[str] = None
+    visibility: Optional[str] = Field(None, pattern=r"^(private|shared)$")
 
 
 class KnowledgeItemResponse(BaseModel):
@@ -30,6 +32,7 @@ class KnowledgeItemResponse(BaseModel):
     category: Optional[str] = None
     tags: Optional[str] = None
     status: str
+    visibility: str
     source: Optional[str] = None
     created_by: Optional[int] = None
     created_at: datetime

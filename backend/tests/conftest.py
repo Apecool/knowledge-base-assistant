@@ -94,3 +94,44 @@ def sample_user_data() -> dict:
         "password": "testpass123",
         "full_name": "Test User",
     }
+
+
+@pytest.fixture
+def sample_user(db: Session, sample_user_data: dict) -> Any:
+    """Create and return a sample user in the database."""
+    from app.models.user import User
+    from app.api.v1.auth import get_password_hash
+    user = User(
+        username=sample_user_data["username"],
+        email=sample_user_data["email"],
+        hashed_password=get_password_hash(sample_user_data["password"]),
+        full_name=sample_user_data["full_name"],
+    )
+    db.add(user)
+    db.commit()
+    db.refresh(user)
+    return user
+
+
+@pytest.fixture
+def auth_headers(client: TestClient, sample_user_data: dict) -> dict:
+    """Register a user and return auth headers with Bearer token."""
+    resp = client.post("/api/v1/auth/register", json=sample_user_data)
+    assert resp.status_code == 201
+    token = resp.json()["access_token"]
+    return {"Authorization": f"Bearer {token}"}
+
+
+@pytest.fixture
+def auth_headers_2(client: TestClient) -> dict:
+    """Register a second user and return auth headers with Bearer token."""
+    user_data = {
+        "username": "testuser2",
+        "email": "test2@example.com",
+        "password": "testpass456",
+        "full_name": "Test User 2",
+    }
+    resp = client.post("/api/v1/auth/register", json=user_data)
+    assert resp.status_code == 201
+    token = resp.json()["access_token"]
+    return {"Authorization": f"Bearer {token}"}

@@ -44,3 +44,20 @@ def get_db():
 def init_db():
     """Create all tables (idempotent — only creates missing tables)."""
     Base.metadata.create_all(bind=engine)
+
+    # Migration: add missing columns for existing SQLite databases
+    if settings.DATABASE_URL.startswith("sqlite"):
+        from sqlalchemy import text
+        with engine.connect() as conn:
+            # Ensure visibility column exists on knowledge_items
+            try:
+                conn.execute(text("ALTER TABLE knowledge_items ADD COLUMN visibility VARCHAR(20) DEFAULT 'private'"))
+                conn.commit()
+            except Exception:
+                pass  # Column already exists
+            # Ensure created_by column exists on knowledge_items
+            try:
+                conn.execute(text("ALTER TABLE knowledge_items ADD COLUMN created_by INTEGER REFERENCES users(id)"))
+                conn.commit()
+            except Exception:
+                pass  # Column already exists

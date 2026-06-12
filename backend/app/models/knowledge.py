@@ -1,16 +1,15 @@
 """
-Knowledge Item Database Model
+Knowledge Item Database Model — with private/shared visibility support.
 """
 from datetime import datetime
-from sqlalchemy import Column, Integer, String, Text, DateTime, Enum as SAEnum
+from sqlalchemy import Column, Integer, String, Text, DateTime, ForeignKey
+from sqlalchemy.orm import relationship
 from app.database import Base
-import enum
 
 
-class KnowledgeStatus(str, enum.Enum):
-    DRAFT = "draft"
-    PUBLISHED = "published"
-    ARCHIVED = "archived"
+class Visibility:
+    PRIVATE = "private"
+    SHARED = "shared"
 
 
 class KnowledgeItem(Base):
@@ -20,12 +19,15 @@ class KnowledgeItem(Base):
     title = Column(String(255), nullable=False, index=True)
     content = Column(Text, nullable=False)
     category = Column(String(100), nullable=True, index=True)
-    tags = Column(String(500), nullable=True)  # Comma-separated tags
-    status = Column(SAEnum(KnowledgeStatus), default=KnowledgeStatus.DRAFT)
+    tags = Column(String(500), nullable=True)
+    status = Column(String(20), default="draft")  # draft, published, archived
+    visibility = Column(String(20), default=Visibility.PRIVATE)  # private, shared
     source = Column(String(255), nullable=True)
-    created_by = Column(Integer, nullable=True)
+    created_by = Column(Integer, ForeignKey("users.id"), nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
+    creator = relationship("User", backref="knowledge_items")
+
     def __repr__(self):
-        return f"<KnowledgeItem(id={self.id}, title='{self.title}')>"
+        return f"<KnowledgeItem(id={self.id}, title='{self.title}', visibility='{self.visibility}')>"
